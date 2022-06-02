@@ -2,7 +2,7 @@ package utils
 
 import com.google.common.collect.TreeMultiset
 
-import scala.collection.JavaConversions._
+import scala.jdk.CollectionConverters._
 import scala.collection.mutable
 
 object GedikPartitioner2 {
@@ -150,10 +150,10 @@ object GedikPartitioner2 {
 
 
         val minCandidates =
-          loadsSorted.iterator().toIterator.take(2).toMap ++
+          loadsSorted.iterator().asScala.take(2).toMap ++
             Map(minCandIdx -> (loads(minCandIdx) + minCandDelta))
         val maxCandidates =
-          loadsSorted.descendingMultiset().iterator().toIterator.take(2).toMap ++
+          loadsSorted.descendingMultiset().iterator().asScala.take(2).toMap ++
             Map(maxCandIdx -> (loads(maxCandIdx) + maxCandDelta))
 
         val minLoad = minCandidates.values.min

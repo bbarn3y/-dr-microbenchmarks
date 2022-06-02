@@ -206,7 +206,9 @@ object PartitionerUpdateMeasurement {
               // groups of size keyShuffling; the shuffle window is slightly shifted with every
               // iteration
               keys = keys.take(i % keyShuffling) ++
-                keys.slice(i % keyShuffling, shuffleBound + i % keyShuffling).grouped(keyShuffling).flatMap(group => Random.shuffle[Any, Seq](group)) ++
+                keys.slice(i % keyShuffling, shuffleBound + i % keyShuffling)
+                  .grouped(keyShuffling)
+                  .flatMap(group => Random.shuffle(group)) ++
                 keys.drop(shuffleBound + i % keyShuffling)
             }
             // generate a new (sorted) key histogram for the current batch
@@ -226,7 +228,9 @@ object PartitionerUpdateMeasurement {
               // groups of size keyShuffling; the shuffle window is slightly shifted with every
               // iteration
               keys = keys.take(i % keyShuffling) ++
-                keys.slice(i % keyShuffling, shuffleBound + i % keyShuffling).grouped(keyShuffling).flatMap(group => Random.shuffle[Any, Seq](group)) ++
+                keys.slice(i % keyShuffling, shuffleBound + i % keyShuffling)
+                  .grouped(keyShuffling)
+                  .flatMap(group => Random.shuffle(group)) ++
                 keys.drop(shuffleBound + i % keyShuffling)
             }
             // generate a new (sorted) key histogram for the current batch

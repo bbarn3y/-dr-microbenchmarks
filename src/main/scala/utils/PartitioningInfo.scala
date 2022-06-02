@@ -32,7 +32,7 @@ case class PartitioningInfo(
 
 // Create PartitioningInfo from global key histogram
 object PartitioningInfo {
-  def newInstance(globalHistogram: scala.collection.Seq[(Any, Double)], numPartitions: Int,
+  def newInstance(globalHistogram: scala.collection.immutable.Seq[(Any, Double)], numPartitions: Int,
     treeDepthHint: Int, sCutHint: Int = 0, partitionHistogram: Option[Map[Int, Double]] = None): PartitioningInfo = {
     require(numPartitions > 0, "Where's my number of partitions, I can not call you maybe!")
 

@@ -70,7 +70,7 @@ object TimeSeriesStreamingMBMeasurement {
     val preKeyDistributionsWithHistory = preKeyDistributions.scanLeft(Map[Any, Double]())((map1, map2) => mergeMaps(map1, map2)).drop(1)
 
     // normed key histograms per batch
-    val keyDistributionsMap = preKeyDistributions.map(m => m.mapValues(v => v / sampleSize))
+    val keyDistributionsMap = preKeyDistributions.map(m => m.view.mapValues(v => v / sampleSize).toMap)
     val keyDistributionsWithHistoryMap = preKeyDistributionsWithHistory.zip(1 to numBatches).map({ case (m, i) =>
       val factor = i * sampleSize
       m.mapValues(v => v / factor)
@@ -78,7 +78,7 @@ object TimeSeriesStreamingMBMeasurement {
     // retentive key histograms per batch
     // this is a weighted average of the current histogram and the history (exponential decay)
     val retentiveKeyDistributions = keyDistributionsMap.tail.scanLeft(keyDistributionsMap.head)({ case (map1, map2) =>
-      mergeMaps(map1.mapValues(v => v * retentionRate), map2.mapValues(v => v * (1.0 - retentionRate)))
+      mergeMaps(map1.mapValues(v => v * retentionRate).toMap, map2.mapValues(v => v * (1.0 - retentionRate)).toMap)
     }).map(m => m.toArray.sortBy(-_._2))
 
     // aggregated unnormed key histograms used as history for key distribution; currently unused
@@ -90,7 +90,7 @@ object TimeSeriesStreamingMBMeasurement {
     // we suppose that states are kept for the last stateWindow batches by a stateful operator
     // the size of state is assumed to be linear in the size of a key-group
     val stateSizes = (1 - stateWindow until numBatches - stateWindow + 1 by 1).map(i => keyDistributionsMap.slice(i, i + stateWindow)).map(g =>
-      g.foldLeft(Map[Any, Double]())((map1, map2) => mergeMaps(map1, map2)).mapValues(_ / stateWindow))
+      g.foldLeft(Map[Any, Double]())((map1, map2) => mergeMaps(map1, map2.toMap)).mapValues(_ / stateWindow))
 
     /**
       * Create the appropriate partitioner based on the partitioner's name.
@@ -198,8 +198,8 @@ object TimeSeriesStreamingMBMeasurement {
         }
 
         // measure partitioning balance and migration cost with linear and constant state
-        migrationMeasurements(i) += measureExactMigrationCost(partitioner1, partitioner2, stateSizeHistogram)
-        migrationMeasurementsWithConstantState(i) += measureExactMigrationCost2(partitioner1, partitioner2, stateSizeHistogram)
+        migrationMeasurements(i) += measureExactMigrationCost(partitioner1, partitioner2, stateSizeHistogram.toMap)
+        migrationMeasurementsWithConstantState(i) += measureExactMigrationCost2(partitioner1, partitioner2, stateSizeHistogram.toMap)
         balanceMeasurements(i) += measureBalance(optimalBalance, partitioner1, keyHistogram)
         i = i + 1
       }
@@ -262,5 +262,5 @@ object TimeSeriesStreamingMBMeasurement {
   def normalizeMap(map: Map[Any, Double]): Map[Any, Double] = {
     val sum = map.values.sum
     map.mapValues(v => v / sum)
-  }
+  }.toMap
 }

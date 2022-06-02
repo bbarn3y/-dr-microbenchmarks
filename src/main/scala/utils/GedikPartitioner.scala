@@ -2,9 +2,9 @@ package utils
 
 import com.google.common.collect.TreeMultiset
 
-import scala.collection.JavaConversions._
 import scala.collection.immutable.{HashMap, TreeMap}
 import scala.collection.mutable
+import scala.jdk.CollectionConverters.MapHasAsJava
 
 /**
   * Partitioning function construction based on paper by Gedik et al. (2014):
@@ -60,7 +60,7 @@ object GedikPartitioner {
     private val lookupMap: TreeMap[HashCode, Int] = TreeMap[HashCode, Int](hashes: _*)(ord)
 
     private val jLookupMap: java.util.TreeMap[HashCode, Int] =
-      new java.util.TreeMap(mapAsJavaMap(lookupMap))
+      new java.util.TreeMap(lookupMap.asJava)
 
     override def getPartition(key: Any): Int = {
       // TODO this lookup should be more efficient, maybe use Java TreeMap or TreeSet?
